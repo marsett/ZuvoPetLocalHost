@@ -1,1 +1,1 @@
-Primera versión el local del proyecto "ZuvoPet", por Mario Jiménez Marset.
+Primera versión en local del proyecto "ZuvoPet", por Mario Jiménez Marset.
