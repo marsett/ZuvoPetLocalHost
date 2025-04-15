@@ -347,58 +347,82 @@ namespace ZuvoPetLocalHost.Controllers
             return PartialView(viewModel);
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> ActualizarDescripcion(VistaPerfilAdoptante modelo)
+        //{
+        //    int idusuario = GetCurrentUserId();
+
+        //    var adoptante = await repo.GetPerfilAdoptante(idusuario);
+
+        //    adoptante.Descripcion = modelo.Descripcion;
+
+        //    await context.SaveChangesAsync();
+
+        //    return RedirectToAction("Perfil");
+        //}
+
         [HttpPost]
         public async Task<IActionResult> ActualizarDescripcion(VistaPerfilAdoptante modelo)
         {
             int idusuario = GetCurrentUserId();
-
-            var adoptante = await repo.GetPerfilAdoptante(idusuario);
-
-            adoptante.Descripcion = modelo.Descripcion;
-
-            await context.SaveChangesAsync();
-
+            await this.repo.ActualizarDescripcionAdoptante(idusuario, modelo.Descripcion);
             return RedirectToAction("Perfil");
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> ActualizarDetalles(VistaPerfilAdoptante modelo)
+        //{
+        //    int idusuario = GetCurrentUserId();
+
+        //    var adoptante = await repo.GetPerfilAdoptante(idusuario);
+
+        //    adoptante.TipoVivienda = modelo.TipoVivienda;
+        //    adoptante.RecursosDisponibles = modelo.RecursosDisponibles;
+        //    adoptante.TiempoEnCasa = modelo.TiempoEnCasa;
+        //    adoptante.TieneJardin = modelo.TieneJardin;
+        //    adoptante.OtrosAnimales = modelo.OtrosAnimales;
+
+        //    await context.SaveChangesAsync();
+
+        //    return RedirectToAction("Perfil");
+        //}
 
         [HttpPost]
         public async Task<IActionResult> ActualizarDetalles(VistaPerfilAdoptante modelo)
         {
             int idusuario = GetCurrentUserId();
-
-            var adoptante = await repo.GetPerfilAdoptante(idusuario);
-
-            adoptante.TipoVivienda = modelo.TipoVivienda;
-            adoptante.RecursosDisponibles = modelo.RecursosDisponibles;
-            adoptante.TiempoEnCasa = modelo.TiempoEnCasa;
-            adoptante.TieneJardin = modelo.TieneJardin;
-            adoptante.OtrosAnimales = modelo.OtrosAnimales;
-
-            await context.SaveChangesAsync();
-
+            await this.repo.ActualizarDetallesAdoptante(idusuario, modelo);
             return RedirectToAction("Perfil");
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> ActualizarPerfil(VistaPerfilAdoptante modelo)
+        //{
+        //    int idusuario = GetCurrentUserId();
+
+
+        //    var usuario = await context.Usuarios.FindAsync(idusuario);
+        //    if (usuario != null)
+        //    {
+        //        usuario.Email = modelo.Email;
+        //    }
+
+        //    var adoptante = await context.Adoptantes.FirstOrDefaultAsync(a => a.IdUsuario == idusuario);
+        //    if (adoptante != null)
+        //    {
+        //        adoptante.Nombre = modelo.Nombre;
+        //    }
+
+        //    await context.SaveChangesAsync();
+
+        //    return RedirectToAction("Perfil");
+        //}
 
         [HttpPost]
         public async Task<IActionResult> ActualizarPerfil(VistaPerfilAdoptante modelo)
         {
             int idusuario = GetCurrentUserId();
-
-
-            var usuario = await context.Usuarios.FindAsync(idusuario);
-            if (usuario != null)
-            {
-                usuario.Email = modelo.Email;
-            }
-
-            var adoptante = await context.Adoptantes.FirstOrDefaultAsync(a => a.IdUsuario == idusuario);
-            if (adoptante != null)
-            {
-                adoptante.Nombre = modelo.Nombre;
-            }
-
-            await context.SaveChangesAsync();
-
+            await this.repo.ActualizarPerfilAdoptante(idusuario, modelo.Email, modelo.Nombre);
             return RedirectToAction("Perfil");
         }
 
@@ -407,11 +431,71 @@ namespace ZuvoPetLocalHost.Controllers
             return View();
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> SubirFichero(IFormFile fichero)
+        //{
+        //    string fileName = Guid.NewGuid().ToString() + ".png";
+
+        //    string path = this.helperPath.MapPath(fileName, Folders.Images);
+        //    string pathServer = this.helperPath.MapUrlPathServer(fileName, Folders.Images);
+
+        //    using (Stream stream = new FileStream(path, FileMode.Create))
+        //    {
+        //        await fichero.CopyToAsync(stream);
+        //    }
+
+        //    string pathAccessor = this.helperPath.MapUrlPath(fileName, Folders.Images);
+
+        //    int idusuario = GetCurrentUserId();
+
+        //    var adoptante = await repo.GetPerfilAdoptante(idusuario);
+
+        //    // Eliminar la foto de perfil anterior si existe
+        //    if (!string.IsNullOrEmpty(adoptante.FotoPerfil))
+        //    {
+        //        string oldFilePath = this.helperPath.MapPath(adoptante.FotoPerfil, Folders.Images);
+        //        if (System.IO.File.Exists(oldFilePath))
+        //        {
+        //            System.IO.File.Delete(oldFilePath);
+        //        }
+        //    }
+
+        //    adoptante.FotoPerfil = fileName;
+        //    await context.SaveChangesAsync();
+
+        //    // Obtener la nueva foto para actualizar la sesión y los claims
+        //    string fotoPerfil = await this.repo.GetFotoPerfilAsync(idusuario);
+
+        //    var user = HttpContext.User;
+        //    var identity = user.Identity as ClaimsIdentity;
+
+        //    if (identity != null)
+        //    {
+        //        // Eliminar el claim existente
+        //        var existingClaim = identity.FindFirst("FotoPerfil");
+        //        if (existingClaim != null)
+        //        {
+        //            identity.RemoveClaim(existingClaim);
+        //        }
+
+        //        // Agregar el nuevo claim con la nueva foto
+        //        Claim claimFoto = new Claim("FotoPerfil", fotoPerfil);
+        //        identity.AddClaim(claimFoto);
+
+        //        // REFRESCAR LA AUTENTICACIÓN DEL USUARIO
+        //        await HttpContext.SignInAsync(
+        //            CookieAuthenticationDefaults.AuthenticationScheme,
+        //            new ClaimsPrincipal(identity)
+        //        );
+        //    }
+
+        //    return RedirectToAction("Perfil");
+        //}
+
         [HttpPost]
         public async Task<IActionResult> SubirFichero(IFormFile fichero)
         {
             string fileName = Guid.NewGuid().ToString() + ".png";
-
             string path = this.helperPath.MapPath(fileName, Folders.Images);
             string pathServer = this.helperPath.MapUrlPathServer(fileName, Folders.Images);
 
@@ -421,7 +505,6 @@ namespace ZuvoPetLocalHost.Controllers
             }
 
             string pathAccessor = this.helperPath.MapUrlPath(fileName, Folders.Images);
-
             int idusuario = GetCurrentUserId();
 
             var adoptante = await repo.GetPerfilAdoptante(idusuario);
@@ -436,8 +519,7 @@ namespace ZuvoPetLocalHost.Controllers
                 }
             }
 
-            adoptante.FotoPerfil = fileName;
-            await context.SaveChangesAsync();
+            await this.repo.ActualizarFotoPerfilAdoptante(idusuario, fileName);
 
             // Obtener la nueva foto para actualizar la sesión y los claims
             string fotoPerfil = await this.repo.GetFotoPerfilAsync(idusuario);
@@ -613,16 +695,40 @@ namespace ZuvoPetLocalHost.Controllers
             return RedirectToAction("Perfil");
         }
 
+        //public async Task<IActionResult> DetallesMascota(int idmascota)
+        //{
+        //    Mascota mascota = await this.repo.GetDetallesMascotaAsync(idmascota);
+        //    // Comprobar si el usuario ya ha visto esta mascota
+        //    string cookieName = $"Mascota_Vista_{idmascota}";
+        //    if (Request.Cookies[cookieName] == null)
+        //    {
+        //        // El usuario no ha visto esta mascota antes, incrementar contador
+        //        mascota.Vistas++;
+        //        await this.context.SaveChangesAsync();
+
+        //        // Crear una cookie para registrar que este usuario ya vio esta mascota
+        //        // La cookie expirará después de 30 días
+        //        CookieOptions options = new CookieOptions
+        //        {
+        //            Expires = DateTime.Now.AddDays(30),
+        //            IsEssential = true,
+        //            HttpOnly = true
+        //        };
+        //        Response.Cookies.Append(cookieName, "visto", options);
+        //    }
+        //    return View(mascota);
+        //}
+
         public async Task<IActionResult> DetallesMascota(int idmascota)
         {
             Mascota mascota = await this.repo.GetDetallesMascotaAsync(idmascota);
+
             // Comprobar si el usuario ya ha visto esta mascota
             string cookieName = $"Mascota_Vista_{idmascota}";
             if (Request.Cookies[cookieName] == null)
             {
                 // El usuario no ha visto esta mascota antes, incrementar contador
-                mascota.Vistas++;
-                await this.context.SaveChangesAsync();
+                await this.repo.IncrementarVistasMascota(idmascota);
 
                 // Crear una cookie para registrar que este usuario ya vio esta mascota
                 // La cookie expirará después de 30 días
@@ -813,10 +919,17 @@ namespace ZuvoPetLocalHost.Controllers
             return RedirectToAction("HistoriasExito");
         }
 
+        //private async Task<int> GetIdUsuarioActual()
+        //{
+        //    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        //    var adoptante = await context.Adoptantes.FirstOrDefaultAsync(a => a.IdUsuario == userId);
+        //    return userId;
+        //}
+
         private async Task<int> GetIdUsuarioActual()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var adoptante = await context.Adoptantes.FirstOrDefaultAsync(a => a.IdUsuario == userId);
+            var adoptante = await this.repo.GetAdoptanteByUsuarioIdAsync(userId);
             return userId;
         }
 
@@ -831,27 +944,56 @@ namespace ZuvoPetLocalHost.Controllers
         }
 
         // Ver chat específico
+        //[HttpGet]
+        //public async Task<IActionResult> Chat(int id)
+        //{
+        //    //int usuarioActualId = await GetIdUsuarioActual();
+        //    int usuarioActualId = GetCurrentUserId();
+
+        //    // Obtener mensajes
+        //    var mensajes = await this.repo.GetMensajesConversacionAsync(usuarioActualId, id);
+
+        //    // Marcar como leídos los mensajes recibidos
+        //    foreach (var mensaje in mensajes.Where(m => m.IdEmisor == id && !m.Leido))
+        //    {
+        //        mensaje.Leido = true;
+        //    }
+        //    await context.SaveChangesAsync();
+
+        //    // Obtener nombre del refugio
+        //    var refugio = await context.Refugios
+        //        .Include(refugio => refugio.Usuario.PerfilUsuario)
+        //        .FirstOrDefaultAsync(r => r.IdUsuario == id);
+        //    string nombreDestinatario = refugio != null ? refugio.NombreRefugio : "UsuarioO";
+
+        //    var viewModel = new ChatViewModel
+        //    {
+        //        Mensajes = mensajes,
+        //        NombreDestinatario = nombreDestinatario,
+        //        IdDestinatario = id,
+        //        FotoDestinatario = refugio.Usuario.PerfilUsuario.FotoPerfil
+        //    };
+
+        //    return View(viewModel);
+        //}
         [HttpGet]
         public async Task<IActionResult> Chat(int id)
         {
-            //int usuarioActualId = await GetIdUsuarioActual();
             int usuarioActualId = GetCurrentUserId();
 
             // Obtener mensajes
             var mensajes = await this.repo.GetMensajesConversacionAsync(usuarioActualId, id);
 
-            // Marcar como leídos los mensajes recibidos
-            foreach (var mensaje in mensajes.Where(m => m.IdEmisor == id && !m.Leido))
-            {
-                mensaje.Leido = true;
-            }
-            await context.SaveChangesAsync();
+            // Marcar los mensajes como leídos
+            await repo.MarcarMensajesComoLeidosAsync(usuarioActualId, id);
 
-            // Obtener nombre del refugio
-            var refugio = await context.Refugios
-                .Include(refugio => refugio.Usuario.PerfilUsuario)
-                .FirstOrDefaultAsync(r => r.IdUsuario == id);
-            string nombreDestinatario = refugio != null ? refugio.NombreRefugio : "UsuarioO";
+            // Obtener nombre del destinatario
+            //var adoptante = await context.Adoptantes
+            //    .Include(adoptante => adoptante.Usuario.PerfilUsuario)
+            //    .FirstOrDefaultAsync(r => r.IdUsuario == id);
+            var refugio = await this.repo.GetRefugioChatByIdAsync(id);
+
+            string nombreDestinatario = refugio != null ? refugio.NombreRefugio : "UsuarioOL";
 
             var viewModel = new ChatViewModel
             {
@@ -885,11 +1027,23 @@ namespace ZuvoPetLocalHost.Controllers
         }
 
         // Iniciar chat desde detalles de refugio
+        //[HttpGet]
+        //public async Task<IActionResult> IniciarChat(int refugioId)
+        //{
+        //    // Obtener el IdUsuario del refugio
+        //    var refugio = await context.Refugios.FirstOrDefaultAsync(r => r.Id == refugioId);
+        //    if (refugio == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return RedirectToAction("Chat", new { id = refugio.IdUsuario });
+        //}
         [HttpGet]
         public async Task<IActionResult> IniciarChat(int refugioId)
         {
             // Obtener el IdUsuario del refugio
-            var refugio = await context.Refugios.FirstOrDefaultAsync(r => r.Id == refugioId);
+            var refugio = await this.repo.GetRefugioChatByIdAsync(refugioId);
             if (refugio == null)
             {
                 return NotFound();

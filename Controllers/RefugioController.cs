@@ -120,8 +120,9 @@ namespace ZuvoPetLocalHost.Controllers
         {
             int idusuario = GetCurrentUserId();
             // Obtenemos el refugio asociado al usuario
-            var refugio = await this.context.Refugios
-                .FirstOrDefaultAsync(a => a.IdUsuario == idusuario);
+            //var refugio = await this.context.Refugios
+            //    .FirstOrDefaultAsync(a => a.IdUsuario == idusuario);
+            var refugio = await this.repo.GetRefugioByUsuarioIdAsync(idusuario);
 
             // Verificamos si el refugio ya está en su capacidad máxima
             if (refugio.CantidadAnimales >= refugio.CapacidadMaxima)
@@ -540,37 +541,106 @@ namespace ZuvoPetLocalHost.Controllers
             return View(perfil);
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> ActualizarDescripcion(VistaPerfilRefugio modelo)
+        //{
+        //    int idusuario = GetCurrentUserId();
+
+        //    var refugio = await repo.GetPerfilRefugio(idusuario);
+
+        //    refugio.Descripcion = modelo.Descripcion;
+
+        //    await context.SaveChangesAsync();
+
+        //    return RedirectToAction("Perfil");
+        //}
+
         [HttpPost]
         public async Task<IActionResult> ActualizarDescripcion(VistaPerfilRefugio modelo)
         {
             int idusuario = GetCurrentUserId();
+            bool resultado = await repo.ActualizarDescripcionAsync(idusuario, modelo.Descripcion);
 
-            var refugio = await repo.GetPerfilRefugio(idusuario);
-
-            refugio.Descripcion = modelo.Descripcion;
-
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("Perfil");
+            if (resultado)
+                return RedirectToAction("Perfil");
+            else
+                return View("Error");
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> ActualizarDetalles(VistaPerfilRefugio modelo)
+        //{
+        //    int idusuario = GetCurrentUserId();
+
+        //    var refugio = await repo.GetPerfilRefugio(idusuario);
+
+        //    refugio.ContactoRefugio = modelo.ContactoRefugio;
+        //    refugio.CantidadAnimales = modelo.CantidadAnimales;
+        //    refugio.CapacidadMaxima = modelo.CapacidadMaxima;
+        //    //refugio.Latitud = modelo.Latitud;
+        //    //refugio.Longitud = modelo.Longitud;
+
+        //    await context.SaveChangesAsync();
+
+        //    return RedirectToAction("Perfil");
+        //}
 
         [HttpPost]
         public async Task<IActionResult> ActualizarDetalles(VistaPerfilRefugio modelo)
         {
-            int idusuario = GetCurrentUserId();
+            int idUsuario = GetCurrentUserId();
+            bool resultado = await repo.ActualizarDetallesRefugioAsync(
+                idUsuario,
+                modelo.ContactoRefugio,
+                modelo.CantidadAnimales,
+                modelo.CapacidadMaxima
+            );
 
-            var refugio = await repo.GetPerfilRefugio(idusuario);
-
-            refugio.ContactoRefugio = modelo.ContactoRefugio;
-            refugio.CantidadAnimales = modelo.CantidadAnimales;
-            refugio.CapacidadMaxima = modelo.CapacidadMaxima;
-            //refugio.Latitud = modelo.Latitud;
-            //refugio.Longitud = modelo.Longitud;
-
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("Perfil");
+            if (resultado)
+                return RedirectToAction("Perfil");
+            else
+                return View("Error"); // O manejar el error de otra manera
         }
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> ActualizarUbicacionRefugio(double Latitud, double Longitud)
+        //{
+        //    try
+        //    {
+        //        // Validate input
+        //        if (Latitud == 0 || Longitud == 0)
+        //        {
+        //            return Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+        //                ? Json(new { success = false, error = "Coordenadas inválidas" })
+        //                : RedirectToAction("Perfil");
+        //        }
+
+        //        // Redondea los valores a 6 decimales
+        //        Latitud = Math.Round(Latitud, 6);
+        //        Longitud = Math.Round(Longitud, 6);
+
+        //        int usuarioId = GetCurrentUserId();
+        //        var refugio = await repo.GetRefugioByUsuarioIdAsync(usuarioId)
+        //            ?? throw new InvalidOperationException("Refugio no encontrado");
+
+        //        refugio.Latitud = Latitud;
+        //        refugio.Longitud = Longitud;
+        //        await context.SaveChangesAsync();
+
+        //        return Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+        //            ? Json(new { success = true })
+        //            : RedirectToAction("Perfil");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log the error (consider using a logging framework)
+        //        Console.Error.WriteLine($"Error actualizando ubicación: {ex.Message}");
+        //        return Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+        //            ? Json(new { success = false, error = "Error al actualizar la ubicación" })
+        //            : RedirectToAction("Perfil");
+        //    }
+        //}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -586,17 +656,15 @@ namespace ZuvoPetLocalHost.Controllers
                         : RedirectToAction("Perfil");
                 }
 
-                // Redondea los valores a 6 decimales
-                Latitud = Math.Round(Latitud, 6);
-                Longitud = Math.Round(Longitud, 6);
-
                 int usuarioId = GetCurrentUserId();
-                var refugio = await repo.GetRefugioByUsuarioIdAsync(usuarioId)
-                    ?? throw new InvalidOperationException("Refugio no encontrado");
+                bool resultado = await repo.ActualizarUbicacionRefugioAsync(usuarioId, Latitud, Longitud);
 
-                refugio.Latitud = Latitud;
-                refugio.Longitud = Longitud;
-                await context.SaveChangesAsync();
+                if (!resultado)
+                {
+                    return Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+                        ? Json(new { success = false, error = "No se pudo actualizar la ubicación" })
+                        : RedirectToAction("Perfil");
+                }
 
                 return Request.Headers["X-Requested-With"] == "XMLHttpRequest"
                     ? Json(new { success = true })
@@ -612,25 +680,42 @@ namespace ZuvoPetLocalHost.Controllers
             }
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> ActualizarPerfil(VistaPerfilRefugio modelo)
+        //{
+        //    int idusuario = GetCurrentUserId();
+
+        //    var usuario = await context.Usuarios.FindAsync(idusuario);
+        //    if (usuario != null)
+        //    {
+        //        usuario.Email = modelo.Email;
+        //    }
+
+        //    var refugio = await context.Refugios.FirstOrDefaultAsync(r => r.IdUsuario == idusuario);
+        //    if (refugio != null)
+        //    {
+        //        refugio.NombreRefugio = modelo.NombreRefugio;
+        //        refugio.ContactoRefugio = modelo.ContactoRefugio;
+        //    }
+
+        //    await context.SaveChangesAsync();
+
+        //    return RedirectToAction("Perfil");
+        //}
+
         [HttpPost]
         public async Task<IActionResult> ActualizarPerfil(VistaPerfilRefugio modelo)
         {
             int idusuario = GetCurrentUserId();
+            bool resultado = await repo.ActualizarPerfilRefugioAsync(
+                idusuario,
+                modelo.Email,
+                modelo.NombreRefugio,
+                modelo.ContactoRefugio
+            );
 
-            var usuario = await context.Usuarios.FindAsync(idusuario);
-            if (usuario != null)
-            {
-                usuario.Email = modelo.Email;
-            }
-
-            var refugio = await context.Refugios.FirstOrDefaultAsync(r => r.IdUsuario == idusuario);
-            if (refugio != null)
-            {
-                refugio.NombreRefugio = modelo.NombreRefugio;
-                refugio.ContactoRefugio = modelo.ContactoRefugio;
-            }
-
-            await context.SaveChangesAsync();
+            if (!resultado)
+                return View("Error"); // O manejar el error de otra manera
 
             return RedirectToAction("Perfil");
         }
@@ -640,41 +725,109 @@ namespace ZuvoPetLocalHost.Controllers
             return View();
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> SubirFichero(IFormFile fichero)
+        //{
+        //    string fileName = Guid.NewGuid().ToString() + ".png";
+
+        //    string path = this.helperPath.MapPath(fileName, Folders.Images);
+        //    string pathServer = this.helperPath.MapUrlPathServer(fileName, Folders.Images);
+
+        //    using (Stream stream = new FileStream(path, FileMode.Create))
+        //    {
+        //        await fichero.CopyToAsync(stream);
+        //    }
+
+        //    string pathAccessor = this.helperPath.MapUrlPath(fileName, Folders.Images);
+
+        //    int idusuario = GetCurrentUserId();
+
+        //    var refugio = await repo.GetPerfilRefugio(idusuario);
+
+        //    // Eliminar la foto de perfil anterior si existe
+        //    if (!string.IsNullOrEmpty(refugio.FotoPerfil))
+        //    {
+        //        string oldFilePath = this.helperPath.MapPath(refugio.FotoPerfil, Folders.Images);
+        //        if (System.IO.File.Exists(oldFilePath))
+        //        {
+        //            System.IO.File.Delete(oldFilePath);
+        //        }
+        //    }
+
+        //    refugio.FotoPerfil = fileName;
+        //    await context.SaveChangesAsync();
+
+        //    // Obtener la nueva foto para actualizar la sesión y los claims
+        //    string fotoPerfil = await this.repo.GetFotoPerfilAsync(idusuario);
+
+        //    var user = HttpContext.User;
+        //    var identity = user.Identity as ClaimsIdentity;
+
+        //    if (identity != null)
+        //    {
+        //        // Eliminar el claim existente
+        //        var existingClaim = identity.FindFirst("FotoPerfil");
+        //        if (existingClaim != null)
+        //        {
+        //            identity.RemoveClaim(existingClaim);
+        //        }
+
+        //        // Agregar el nuevo claim con la nueva foto
+        //        Claim claimFoto = new Claim("FotoPerfil", fotoPerfil);
+        //        identity.AddClaim(claimFoto);
+
+        //        // REFRESCAR LA AUTENTICACIÓN DEL USUARIO
+        //        await HttpContext.SignInAsync(
+        //            CookieAuthenticationDefaults.AuthenticationScheme,
+        //            new ClaimsPrincipal(identity)
+        //        );
+        //    }
+
+        //    return RedirectToAction("Perfil");
+        //}
+
         [HttpPost]
         public async Task<IActionResult> SubirFichero(IFormFile fichero)
         {
             string fileName = Guid.NewGuid().ToString() + ".png";
-
             string path = this.helperPath.MapPath(fileName, Folders.Images);
-            string pathServer = this.helperPath.MapUrlPathServer(fileName, Folders.Images);
 
             using (Stream stream = new FileStream(path, FileMode.Create))
             {
                 await fichero.CopyToAsync(stream);
             }
 
-            string pathAccessor = this.helperPath.MapUrlPath(fileName, Folders.Images);
-
             int idusuario = GetCurrentUserId();
 
+            // Obtener la foto de perfil actual antes de actualizarla
             var refugio = await repo.GetPerfilRefugio(idusuario);
+            string oldFileName = refugio?.FotoPerfil;
 
-            // Eliminar la foto de perfil anterior si existe
-            if (!string.IsNullOrEmpty(refugio.FotoPerfil))
+            // Si hay una foto anterior, eliminarla del sistema de archivos
+            if (!string.IsNullOrEmpty(oldFileName))
             {
-                string oldFilePath = this.helperPath.MapPath(refugio.FotoPerfil, Folders.Images);
+                string oldFilePath = this.helperPath.MapPath(oldFileName, Folders.Images);
                 if (System.IO.File.Exists(oldFilePath))
                 {
                     System.IO.File.Delete(oldFilePath);
                 }
             }
 
-            refugio.FotoPerfil = fileName;
-            await context.SaveChangesAsync();
+            // Actualizar la foto de perfil en la base de datos
+            string fotoPerfil = await this.repo.ActualizarFotoPerfilAsync(idusuario, fileName);
 
-            // Obtener la nueva foto para actualizar la sesión y los claims
-            string fotoPerfil = await this.repo.GetFotoPerfilAsync(idusuario);
+            if (fotoPerfil == null)
+            {
+                // Si hubo un error, eliminar el archivo recién subido
+                string uploadedFilePath = this.helperPath.MapPath(fileName, Folders.Images);
+                if (System.IO.File.Exists(uploadedFilePath))
+                {
+                    System.IO.File.Delete(uploadedFilePath);
+                }
+                return View("Error");
+            }
 
+            // Actualizar los claims del usuario con la nueva foto
             var user = HttpContext.User;
             var identity = user.Identity as ClaimsIdentity;
 
@@ -704,7 +857,8 @@ namespace ZuvoPetLocalHost.Controllers
         private async Task<int> GetIdUsuarioActual()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var refugio = await context.Refugios.FirstOrDefaultAsync(a => a.IdUsuario == userId);
+            //var refugio = await context.Refugios.FirstOrDefaultAsync(a => a.IdUsuario == userId);
+            var refugio = await this.repo.GetRefugioByUsuarioIdAsync(userId);
             return userId;
         }
 
@@ -719,26 +873,56 @@ namespace ZuvoPetLocalHost.Controllers
         }
 
         // Ver chat específico
+        //[HttpGet]
+        //public async Task<IActionResult> Chat(int id)
+        //{
+        //    //int usuarioActualId = await GetIdUsuarioActual();
+        //    int usuarioActualId = GetCurrentUserId();
+
+        //    // Obtener mensajes
+        //    var mensajes = await this.repo.GetMensajesConversacionAsync(usuarioActualId, id);
+
+        //    // Marcar como leídos los mensajes recibidos
+        //    foreach (var mensaje in mensajes.Where(m => m.IdEmisor == id && !m.Leido))
+        //    {
+        //        mensaje.Leido = true;
+        //    }
+        //    await context.SaveChangesAsync();
+
+        //    // Obtener nombre del refugio
+        //    var adoptante = await context.Adoptantes
+        //        .Include(adoptante => adoptante.Usuario.PerfilUsuario)
+        //        .FirstOrDefaultAsync(r => r.IdUsuario == id);
+        //    string nombreDestinatario = adoptante != null ? adoptante.Nombre : "UsuarioOL";
+
+        //    var viewModel = new ChatViewModel
+        //    {
+        //        Mensajes = mensajes,
+        //        NombreDestinatario = nombreDestinatario,
+        //        IdDestinatario = id,
+        //        FotoDestinatario = adoptante.Usuario.PerfilUsuario.FotoPerfil
+        //    };
+
+        //    return View(viewModel);
+        //}
+
         [HttpGet]
         public async Task<IActionResult> Chat(int id)
         {
-            //int usuarioActualId = await GetIdUsuarioActual();
             int usuarioActualId = GetCurrentUserId();
 
             // Obtener mensajes
             var mensajes = await this.repo.GetMensajesConversacionAsync(usuarioActualId, id);
 
-            // Marcar como leídos los mensajes recibidos
-            foreach (var mensaje in mensajes.Where(m => m.IdEmisor == id && !m.Leido))
-            {
-                mensaje.Leido = true;
-            }
-            await context.SaveChangesAsync();
+            // Marcar los mensajes como leídos
+            await repo.MarcarMensajesComoLeidosAsync(usuarioActualId, id);
 
-            // Obtener nombre del refugio
-            var adoptante = await context.Adoptantes
-                .Include(adoptante => adoptante.Usuario.PerfilUsuario)
-                .FirstOrDefaultAsync(r => r.IdUsuario == id);
+            // Obtener nombre del destinatario
+            //var adoptante = await context.Adoptantes
+            //    .Include(adoptante => adoptante.Usuario.PerfilUsuario)
+            //    .FirstOrDefaultAsync(r => r.IdUsuario == id);
+            var adoptante = await this.repo.GetAdoptanteChatByUsuarioId(id);
+
             string nombreDestinatario = adoptante != null ? adoptante.Nombre : "UsuarioOL";
 
             var viewModel = new ChatViewModel
