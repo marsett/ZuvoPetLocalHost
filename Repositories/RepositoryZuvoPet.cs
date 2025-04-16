@@ -1312,8 +1312,8 @@ namespace ZuvoPetLocalHost.Repositories
                 // Obtener directamente los mensajes no leídos que necesitamos actualizar
                 // con tracking habilitado (por defecto en EF Core)
                 var mensajesNoLeidos = await context.Mensajes
-                    .Where(m => m.IdEmisor == usuarioActualId &&
-                                m.IdReceptor == otroUsuarioId &&
+                    .Where(m => m.IdEmisor == otroUsuarioId &&
+                                m.IdReceptor == usuarioActualId &&
                                 !m.Leido)
                     .ToListAsync();
 
@@ -1474,7 +1474,14 @@ namespace ZuvoPetLocalHost.Repositories
         {
             return await this.context.Refugios
                 .Include(refugio => refugio.Usuario.PerfilUsuario)
-                .FirstOrDefaultAsync(r => r.IdUsuario == refugioId);
+                .FirstOrDefaultAsync(r => r.Id == refugioId);
+        }
+
+        public async Task<Refugio> GetRefugioChatDosByIdAsync(int idusuario)
+        {
+            return await this.context.Refugios
+                .Include(refugio => refugio.Usuario.PerfilUsuario)
+                .FirstOrDefaultAsync(r => r.IdUsuario == idusuario);
         }
 
     }

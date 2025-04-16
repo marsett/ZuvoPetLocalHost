@@ -991,7 +991,7 @@ namespace ZuvoPetLocalHost.Controllers
             //var adoptante = await context.Adoptantes
             //    .Include(adoptante => adoptante.Usuario.PerfilUsuario)
             //    .FirstOrDefaultAsync(r => r.IdUsuario == id);
-            var refugio = await this.repo.GetRefugioChatByIdAsync(id);
+            var refugio = await this.repo.GetRefugioChatDosByIdAsync(id);
 
             string nombreDestinatario = refugio != null ? refugio.NombreRefugio : "UsuarioOL";
 

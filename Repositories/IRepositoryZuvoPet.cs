@@ -101,6 +101,6 @@ namespace ZuvoPetLocalHost.Repositories
         Task<bool> IncrementarVistasMascota(int idMascota);
         Task<Adoptante> GetAdoptanteByUsuarioIdAsync(int idUsuario);
         Task<Refugio> GetRefugioChatByIdAsync(int refugioId);
-
+        Task<Refugio> GetRefugioChatDosByIdAsync(int idusuario);
     }
 }
